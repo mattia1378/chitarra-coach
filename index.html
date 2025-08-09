@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chitarra Coach Pro+ — PWA</title>
+  <meta name="theme-color" content="#101426">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header>
+  <h1>🎸 Chitarra Coach <span class="badge">Pro+ PWA</span></h1>
+  <p class="subtitle">Percorso fino all’intermedio — lezioni, tracker, brani, fingerpicking, PWA & backup</p>
+  <nav>
+    <button class="tab-button active" data-tab="curriculum">Percorso</button>
+    <button class="tab-button" data-tab="lessons">Lezioni</button>
+    <button class="tab-button" data-tab="practice">Progressi</button>
+    <button class="tab-button" data-tab="songs">Brani</button>
+    <button class="tab-button" data-tab="fingerpicking">Fingerpicking</button>
+    <button class="tab-button" data-tab="tuner">Accordatore</button>
+    <button class="tab-button" data-tab="metronome">Metronomo</button>
+    <button class="tab-button" data-tab="chords">Accordi</button>
+    <button class="tab-button" data-tab="progressions">Progressioni</button>
+    <button class="tab-button" data-tab="scales">Scale & Box</button>
+    <button class="tab-button" data-tab="ear">Ear</button>
+    <button class="tab-button" data-tab="exercises">Esercizi</button>
+    <button class="tab-button" data-tab="resources">Risorse</button>
+    <button class="tab-button" data-tab="settings">Impostazioni</button>
+    <button id="themeToggle" aria-label="Tema">🌓</button>
+  </nav>
+</header>
+
+<main>
+  <!-- CURRICULUM -->
+  <section id="curriculum" class="tab active">
+    <h2>Percorso didattico</h2>
+    <div class="grid two">
+      <div class="card">
+        <h3>Principiante A</h3>
+        <ul class="todo" data-key="curA">
+          <li><label><input type="checkbox"> Postura, plettrata base (↓)</label></li>
+          <li><label><input type="checkbox"> Accordi: C, G, D, Em, Am</label></li>
+          <li><label><input type="checkbox"> Cambi lenti 2/4 & 4/4</label></li>
+          <li><label><input type="checkbox"> Metronomo 60–80 BPM</label></li>
+        </ul>
+        <div class="row"><button class="saveList">Salva</button><button class="resetList">Reset</button></div>
+      </div>
+      <div class="card">
+        <h3>Principiante B</h3>
+        <ul class="todo" data-key="curB">
+          <li><label><input type="checkbox"> Accordi: E, A, Dm</label></li>
+          <li><label><input type="checkbox"> Strumming alternato (↓↑)</label></li>
+          <li><label><input type="checkbox"> Palm muting di base</label></li>
+          <li><label><input type="checkbox"> Pentatonica Am Box 1</label></li>
+        </ul>
+        <div class="row"><button class="saveList">Salva</button><button class="resetList">Reset</button></div>
+      </div>
+      <div class="card">
+        <h3>Intermedio A</h3>
+        <ul class="todo" data-key="curC">
+          <li><label><input type="checkbox"> Barrè: F, Bm (forme E/A)</label></li>
+          <li><label><input type="checkbox"> Strumming: D DU UDU</label></li>
+          <li><label><input type="checkbox"> Arpeggi 8th & 16th</label></li>
+          <li><label><input type="checkbox"> Pentatonica Am Box 1–5 collegati</label></li>
+        </ul>
+        <div class="row"><button class="saveList">Salva</button><button class="resetList">Reset</button></div>
+      </div>
+      <div class="card">
+        <h3>Intermedio B</h3>
+        <ul class="todo" data-key="curD">
+          <li><label><input type="checkbox"> CAGED completo</label></li>
+          <li><label><input type="checkbox"> Progressioni I–V–vi–IV, ii–V–I</label></li>
+          <li><label><input type="checkbox"> Hammer-on, pull-off, slide, bend</label></li>
+          <li><label><input type="checkbox"> Timing/feel su backtracks</label></li>
+        </ul>
+        <div class="row"><button class="saveList">Salva</button><button class="resetList">Reset</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LESSONS -->
+  <section id="lessons" class="tab">
+    <h2>Lezioni guidate</h2>
+    <div class="grid two">
+      <div class="card">
+        <h3>Seleziona lezione</h3>
+        <select id="lessonSelect"></select>
+        <div id="lessonInfo" class="lesson"></div>
+      </div>
+      <div class="card">
+        <h3>Video suggeriti</h3>
+        <p>Tocca per cercare su YouTube; incolla un URL per l'embed.</p>
+        <div class="row">
+          <button class="ytSearch" data-q="beginner guitar chords italian">Accordi base</button>
+          <button class="ytSearch" data-q="strumming patterns 4/4 beginner">Strumming 4/4</button>
+          <button class="ytSearch" data-q="pentatonic scale box 1 guitar">Pentatonica Box 1</button>
+        </div>
+        <div class="row">
+          <input id="ytLessonUrl" placeholder="https://www.youtube.com/watch?v=..." />
+          <button id="embedLessonYt">Apri</button>
+        </div>
+        <div id="ytLessonWrap" class="yt"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section id="practice" class="tab">
+    <h2>Tracker pratica</h2>
+    <div class="card">
+      <div class="row">
+        <label>Categoria
+          <select id="catSelect">
+            <option>Accordi</option><option>Strumming</option><option>Scale</option><option>Arpeggi</option><option>Ear</option><option>Brani</option>
+          </select>
+        </label>
+        <button id="startTimer">Start</button>
+        <button id="pauseTimer" disabled>Pausa</button>
+        <button id="saveTimer" disabled>Salva</button>
+        <span id="timerDisplay" class="badge">00:00</span>
+      </div>
+      <p class="hint">Consiglio: sessioni da 10–15 minuti per categoria.</p>
+    </div>
+    <div class="card">
+      <h3>Ultimi 7 giorni</h3>
+      <div id="weekBars" class="weekbars"></div>
+      <div id="totals"></div>
+    </div>
+  </section>
+
+  <!-- SONGS -->
+  <section id="songs" class="tab">
+    <h2>Brani (3–4 accordi, senza testi)</h2>
+    <div class="grid two">
+      <div class="card">
+        <h3>Seleziona brano</h3>
+        <select id="songSelect"></select>
+        <div class="row">
+          <label>Capotasto <input type="number" id="capo" value="0" min="0" max="9"></label>
+          <label>Velocità <input type="range" id="scrollSpeed" min="10" max="200" value="60"> <span id="speedVal">60</span> px/s</label>
+        </div>
+        <div class="row">
+          <button id="startScroll">Avvia autoscroll</button>
+          <button id="stopScroll" disabled>Stop</button>
+        </div>
+        <p class="hint">Il capotasto trasporta gli accordi (salvato per singolo brano).</p>
+      </div>
+      <div class="card">
+        <h3>Chart accordi</h3>
+        <div id="songChart" class="chart" role="region" aria-label="Chart accordi autoscroll"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINGERPICKING -->
+  <section id="fingerpicking" class="tab">
+    <h2>Trainer Fingerpicking</h2>
+    <div class="card">
+      <div class="row">
+        <label>Pattern
+          <select id="fpPattern">
+            <option value="arp">Arpeggio 4/4 (6–3–2–1–3–2–1–2)</option>
+            <option value="travis">Travis 4/4 (B–3–b–2–B–3–b–2)</option>
+            <option value="waltz">Arpeggio 3/4 (5–3–2 | 5–3–2)</option>
+          </select>
+        </label>
+        <label>BPM <input id="fpBpm" type="number" value="72" min="40" max="160"></label>
+        <label>Accordo <select id="fpChord"></select></label>
+      </div>
+      <div class="row">
+        <button id="startFp">Avvia</button>
+        <button id="stopFp" disabled>Stop</button>
+      </div>
+      <div id="fpViz" class="fretmini"></div>
+      <p class="hint">Legenda: B = basso principale del tuo accordo (6/5/4). b = basso alternato due corde sopra.</p>
+    </div>
+  </section>
+
+  <!-- TUNER -->
+  <section id="tuner" class="tab">
+    <h2>Accordatore</h2>
+    <div class="card tuner-card">
+      <div class="display">
+        <div id="note">--</div><div id="freq">0.0 Hz</div><div id="cents">0¢</div>
+      </div>
+      <div class="meter"><div id="needle"></div>
+        <div class="tick t-50">-50</div><div class="tick t-25">-25</div><div class="tick t0">0</div><div class="tick t25">+25</div><div class="tick t50">+50</div>
+      </div>
+      <div class="tuner-controls">
+        <button id="startTuner">Avvia</button><button id="stopTuner" disabled>Stop</button>
+        <label>LA4 <input type="number" id="refA" value="440" min="400" max="460"> Hz</label>
+      </div>
+      <p class="hint">Standard EADGBE: E2 82.41 · A2 110.00 · D3 146.83 · G3 196.00 · B3 246.94 · E4 329.63</p>
+    </div>
+  </section>
+
+  <!-- METRONOME / CHORDS / PROGRESSIONS / STRUMMING / SCALES / EAR / EXERCISES / RESOURCES / SETTINGS -->
+  <section id="metronome" class="tab"><h2>Metronomo</h2>
+    <div class="card"><div class="row">
+      <label>BPM <input id="bpm" type="number" min="30" max="240" value="90"/></label>
+      <label>Tempo
+        <select id="timeSig"><option value="4">4/4</option><option value="3">3/4</option><option value="6">6/8</option></select>
+      </label>
+      <label>Accent <input id="accent" type="checkbox" checked/></label>
+    </div>
+    <div class="row"><button id="startMetro">Avvia</button><button id="stopMetro" disabled>Stop</button></div>
+    <div id="metroLights" class="lights"></div></div>
+  </section>
+
+  <section id="chords" class="tab"><h2>Accordi</h2>
+    <div class="card"><div class="row">
+      <label>Accordo <select id="chordSelect"></select></label><button id="playChord">Arpeggio</button>
+    </div><div class="diagram-wrap"><svg id="chordDiagram"></svg></div></div>
+  </section>
+
+  <section id="progressions" class="tab"><h2>Player Progressioni</h2>
+    <div class="card"><div class="row">
+      <label>Tonalità <select id="keySelect"></select></label>
+      <label>Schema
+        <select id="progSelect">
+          <option value="I-V-vi-IV">I–V–vi–IV (pop)</option>
+          <option value="ii-V-I">ii–V–I (jazz/folk)</option>
+          <option value="I-vi-IV-V">I–vi–IV–V (doo-wop)</option>
+          <option value="I-IV-V">I–IV–V (blues/rock)</option>
+        </select>
+      </label>
+      <label>BPM <input id="progBpm" type="number" value="84" min="40" max="200"></label>
+    </div><div class="row"><button id="startProg">Play</button><button id="stopProg" disabled>Stop</button></div>
+    <p id="progNow" class="hint">Pronto…</p></div>
+  </section>
+
+  <section id="strumming" class="tab"><h2>Trainer Strumming</h2>
+    <div class="card"><div class="row">
+      <label>Pattern
+        <select id="pattern">
+          <option value="D D D D">4 Down (base)</option>
+          <option value="D U D U">Alternato</option>
+          <option value="D DU UDU">Pop 4/4</option>
+          <option value="D - U D U">Con pausa</option>
+          <option value="D D U U D U">Folk 4/4</option>
+          <option value="D U - U D U">Reggae feel</option>
+        </select>
+      </label>
+      <label>BPM <input id="strumBpm" type="number" min="40" max="200" value="80"/></label>
+    </div>
+    <div class="row"><button id="startStrum">Avvia</button><button id="stopStrum" disabled>Stop</button></div>
+    <div id="strumViz" class="strum"></div></div>
+  </section>
+
+  <section id="scales" class="tab"><h2>Scale & Box</h2>
+    <div class="card"><div class="row">
+      <label>Scala
+        <select id="scaleSelect">
+          <option value="pent_minor_A">Pentatonica min A</option>
+          <option value="major_C">Maggiore C</option>
+          <option value="natural_minor_A">Minore naturale A</option>
+        </select>
+      </label>
+      <label>Box
+        <select id="boxSelect"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+      </label>
+      <button id="playScale">Ascolta</button>
+    </div><div class="diagram-wrap"><svg id="scaleDiagram"></svg></div></div>
+  </section>
+
+  <section id="ear" class="tab"><h2>Ear Training</h2>
+    <div class="card">
+      <div class="row">
+        <button id="playInterval">Riproduci intervallo</button>
+        <select id="intervalGuess">
+          <option>Unisono</option><option>2ª min</option><option>2ª mag</option>
+          <option>3ª min</option><option>3ª mag</option><option>4ª giusta</option>
+          <option>Tritono</option><option>5ª giusta</option><option>6ª min</option><option>6ª mag</option>
+          <option>7ª min</option><option>7ª mag</option><option>Ottava</option>
+        </select>
+        <button id="checkInterval">Verifica</button>
+      </div>
+      <p id="earResult" class="hint">Suggerimento: canticchia la prima nota e misura lo scarto.</p>
+    </div>
+  </section>
+
+  <section id="exercises" class="tab"><h2>Esercizi quotidiani</h2>
+    <div class="card">
+      <ul id="todo"></ul>
+      <div class="row"><input id="newTask" placeholder="Aggiungi esercizio..."><button id="addTask">Aggiungi</button><button id="resetDay">Reset giornaliero</button></div>
+    </div>
+  </section>
+
+  <section id="resources" class="tab"><h2>Risorse online</h2>
+    <div class="card">
+      <p>Playlist/backtrack su YouTube (incolla URL):</p>
+      <div class="row"><input id="ytUrl" placeholder="https://www.youtube.com/watch?v=..."><button id="embedYt">Apri</button></div>
+      <div id="ytWrap" class="yt"></div>
+    </div>
+  </section>
+
+  <section id="settings" class="tab">
+    <h2>Impostazioni & Backup</h2>
+    <div class="card">
+      <h3>Backup locale</h3>
+      <div class="row">
+        <button id="exportBtn">Esporta JSON</button>
+        <input type="file" id="importFile" accept="application/json" />
+        <button id="importBtn">Importa JSON</button>
+      </div>
+      <p class="hint">Include: progressi, esercizi, checklist, capotasti brano, preferenze varie.</p>
+      <div class="row">
+        <button id="resetAll" class="danger">Reset dati</button>
+      </div>
+      <p id="backupMsg" class="hint"></p>
+    </div>
+    <div class="card">
+      <h3>Installazione (iOS/iPadOS)</h3>
+      <ol class="steps">
+        <li>Apri l’URL su Safari (HTTPS).</li>
+        <li>Tocca **Condividi → Aggiungi a Home** per installare.</li>
+        <li>Alla prima apertura, consenti il **microfono** per l’accordatore.</li>
+      </ol>
+      <div class="row"><button id="tryInstall">Prova a installare</button></div>
+      <p id="installMsg" class="hint"></p>
+    </div>
+  </section>
+</main>
+
+<footer><small>© 2025 Chitarra Coach Pro+ — PWA. Dati in locale. Embed YouTube richiedono Internet.</small></footer>
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    });
+  }
+</script>
+</body>
+</html>
