@@ -1,5 +1,7 @@
-// Simple offline-first service worker
-const CACHE = 'ccpwa-v1.1.0';
+// Service Worker - freeze fix patch
+// Chitarra Coach - bump cache + fast activation
+const CACHE = 'ccpwa-v1.0.3'; // <- bump this number on each release
+
 const CORE = [
   './',
   './index.html',
@@ -11,24 +13,29 @@ const CORE = [
   './icons/apple-touch-icon.png'
 ];
 
-self.addEventListener('install', (e)=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));
+self.addEventListener('install', (e) => {
+  // Install new SW and skip waiting so it becomes active immediately.
+  self.skipWaiting(); // MDN: ServiceWorkerGlobalScope.skipWaiting()
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)));
 });
 
-self.addEventListener('activate', (e)=>{
+self.addEventListener('activate', (e) => {
+  // Clean old caches and take control of existing clients right away.
   e.waitUntil(
-    caches.keys().then(keys=>Promise.all(keys.map(k=>k!==CACHE ? caches.delete(k): null)))
+    caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE ? caches.delete(k) : 0)))
+      .then(() => self.clients.claim()) // MDN: Clients.claim()
   );
 });
 
-self.addEventListener('fetch', (e)=>{
+self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
-  if (url.origin !== location.origin) return; // don't cache cross-origin (e.g., YouTube)
+  // Network-first for cross-origin (e.g., YouTube); let browser handle it.
+  if (url.origin !== location.origin) return;
   e.respondWith(
-    caches.match(e.request).then(cached=> cached || fetch(e.request).then(resp=>{
+    caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
       const copy = resp.clone();
-      caches.open(CACHE).then(c=>c.put(e.request, copy));
+      caches.open(CACHE).then(c => c.put(e.request, copy));
       return resp;
-    }).catch(()=> cached ))
+    }).catch(() => cached))
   );
 });
