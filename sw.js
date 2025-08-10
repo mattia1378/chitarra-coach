@@ -1,31 +1,41 @@
-// Simplified Service Worker without caching.
-// This file prevents old versions from sticking in the browser cache.
+// Service Worker - freeze fix patch
+// Chitarra Coach - bump cache + fast activation
+const CACHE = 'ccpwa-v1.0.3'; // <- bump this number on each release
 
-const VERSION = 'no-cache-v1';
+const CORE = [
+  './',
+  './index.html',
+  './style.css',
+  './app.js',
+  './manifest.webmanifest',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/apple-touch-icon.png'
+];
 
-// Install event: claim immediately
-self.addEventListener('install', (event) => {
-  // Force the waiting Service Worker to become the active Service Worker
-  self.skipWaiting();
+self.addEventListener('install', (e) => {
+  // Install new SW and skip waiting so it becomes active immediately.
+  self.skipWaiting(); // MDN: ServiceWorkerGlobalScope.skipWaiting()
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)));
 });
 
-// Activate event: take control of all clients immediately
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    // Unregister any existing caches to avoid stale responses
-    caches.keys().then((keys) => {
-      return Promise.all(keys.map((key) => caches.delete(key)));
-    }).then(() => self.clients.claim())
+self.addEventListener('activate', (e) => {
+  // Clean old caches and take control of existing clients right away.
+  e.waitUntil(
+    caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE ? caches.delete(k) : 0)))
+      .then(() => self.clients.claim()) // MDN: Clients.claim()
   );
 });
 
-// Fetch event: network only (no cache)
-// We deliberately avoid responding from cache to ensure the latest files are fetched.
-self.addEventListener('fetch', (event) => {
-  // Only handle requests from the same origin
-  const requestURL = new URL(event.request.url);
-  if (requestURL.origin !== location.origin) {
-    return;
-  }
-  event.respondWith(fetch(event.request));
+self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
+  // Network-first for cross-origin (e.g., YouTube); let browser handle it.
+  if (url.origin !== location.origin) return;
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
+      const copy = resp.clone();
+      caches.open(CACHE).then(c => c.put(e.request, copy));
+      return resp;
+    }).catch(() => cached))
+  );
 });

@@ -1,0 +1,27 @@
+<!-- 🔧 Patch: SW update banner + auto-reload -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('sw.js');
+      reg.addEventListener('updatefound', () => {
+        // a new SW is installing -> show banner
+        const b = document.getElementById('updBanner');
+        if (b) b.hidden = false;
+      });
+    } catch (e) { console.error('SW register error', e); }
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    // new SW took control -> force a clean reload
+    location.reload();
+  });
+}
+</script>
+
+<!-- Minimal floating banner (optional styles) -->
+<div id="updBanner" hidden
+     style="position:fixed;inset:auto 12px 12px 12px;background:#203063;color:#eef2ff;
+            border:1px solid #2d3b77;border-radius:10px;padding:10px 12px;z-index:9999">
+  Nuova versione disponibile. Sto aggiornando… (se resta qui, chiudi e riapri l’app)
+</div>
+<!-- /Patch end -->
