@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset Service Worker</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; background: #f0f2ff; color: #1a1a2e; }
+    h1 { color: #283593; }
+    button { background: #283593; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+    p { margin-top: 20px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <h1>Reset Service Worker</h1>
+  <p>Se riscontri che l'app è bloccata o non aggiorna, premi il pulsante qui sotto. Verrà disinstallato il Service Worker e la pagina verrà ricaricata.</p>
+  <button id="reset">Disinstalla SW e ricarica</button>
+  <p><strong>Nota:</strong> dopo aver ricaricato la pagina, il nuovo Service Worker semplificato verrà installato automaticamente.</p>
+
+  <script>
+    document.getElementById('reset').addEventListener('click', async () => {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(r => r.unregister()));
+        // Clear caches as well
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+        // Reload page to fetch fresh files
+        location.reload(true);
+      } else {
+        alert('Service Worker non supportato nel tuo browser.');
+      }
+    });
+  </script>
+</body>
+</html>
