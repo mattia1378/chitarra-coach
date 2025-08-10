@@ -330,18 +330,15 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    const reg = await navigator.serviceWorker.register('sw.js'); // registra/aggiorna SW  [oai_citation:0‡MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/register?utm_source=chatgpt.com)
-    reg.addEventListener('updatefound', () => {                  // nuovo SW in arrivo  [oai_citation:1‡MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/updatefound_event?utm_source=chatgpt.com)
-      const banner = document.getElementById('updBanner'); banner.hidden = false;
-    });
-  });
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    // il nuovo SW ha preso il controllo: ricarico per sbloccare la UI  [oai_citation:2‡MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/controllerchange_event?utm_source=chatgpt.com)
-    location.reload();
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('./sw.js', { scope: './' })
+      .then(reg => console.log('SW ok', reg))
+      .catch(err => console.error('SW err', err));
   });
 }
 </script>
+
 <!-- banner minimal -->
 <div id="updBanner" hidden
      style="position:fixed;inset:auto 12px 12px 12px;background:#203063;color:#eef2ff;
