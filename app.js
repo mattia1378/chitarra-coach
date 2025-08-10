@@ -7,6 +7,9 @@ document.querySelectorAll('.tab-button').forEach(btn=>{
     btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active');
   });
 });
+navigator.serviceWorker?.addEventListener('message', e => {
+  if (e.data?.type === 'SW_READY') document.body.classList.remove('updating');
+});
 
 /* -------- Curriculum persistence -------- */
 document.querySelectorAll('ul.todo').forEach(list=>{
