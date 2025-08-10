@@ -27,6 +27,16 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => {
+  e.waitUntil((async () => {
+    // …eventuale pulizia cache…
+    await self.clients.claim();
+    const all = await self.clients.matchAll({ includeUncontrolled: true });
+    for (const client of all) client.postMessage({ type: 'SW_READY' });
+  })());
+});
+
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   // Network-first for cross-origin (e.g., YouTube); let browser handle it.
