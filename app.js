@@ -1,3 +1,8 @@
+function showError(msg){
+  const el=document.getElementById('errorBanner')||document.getElementById('backupMsg');
+  if(el){ el.textContent=msg; el.hidden=false; }
+}
+try{
 // Tabs & Theme
 document.getElementById('themeToggle').addEventListener('click', ()=>document.documentElement.classList.toggle('light'));
 function activateTab(id){
@@ -29,8 +34,10 @@ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t===in
 navigator.serviceWorker?.addEventListener('message', e => {
   if (e.data?.type === 'SW_READY') document.body.classList.remove('updating');
 });
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Curriculum persistence -------- */
+try{
 document.querySelectorAll('ul.todo').forEach(list=>{
   const key = 'ccppwa3_'+list.dataset.key;
   const saved = JSON.parse(localStorage.getItem(key) || '[]');
@@ -45,8 +52,10 @@ document.querySelectorAll('ul.todo').forEach(list=>{
     localStorage.removeItem(key);
   });
 });
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Lessons -------- */
+try{
 const LESSONS = [
   {id:'L1', level:'A', title:'Accordi aperti 1', goals:['C, G, D, Em, Am','Cambi a tempo lento','Strumming ↓ in 4/4'],
    steps:['Postura e impugnatura plettro','Suona corde a vuoto col metronomo (60 BPM)','Impara le posizioni: C, G, D, Em, Am','Cambia C↔G e G↔D lentamente','Strumming solo ↓ (4 colpi x battuta)'],
@@ -54,7 +63,7 @@ const LESSONS = [
   {id:'L2', level:'A', title:'Strumming alternato', goals:['↓↑ rilassato','Ghost stroke e dinamica','Muting con palmo'],
    steps:['Metronomo 70–80 BPM','Pattern ↓ ↑ ↓ ↑ su Em','Aggiungi accento sul 2 e 4','Ghost stroke sui movimenti in aria','Palm muting leggero su ponte'],
    suggest:['strumming down up tutorial','accent on 2 and 4 guitar','palm muting acoustic guitar']},
-  {id:'L3', level:'B', title:'Barrè base (F forma E)', goals:['Pollice dietro corretto','Pressione minima','Cambi lenti a/b'], 
+  {id:'L3', level:'B', title:'Barrè base (F forma E)', goals:['Pollice dietro corretto','Pressione minima','Cambi lenti a/b'],
    steps:['Riscalda dita','Forma F al 1° tasto (mini-barrè prime 2 corde)','Aggiungi barrè completo quando pulito','Cambia C → F → C','Metronomo 60 BPM, 1 battuta per cambio'],
    suggest:['how to play F barre chord','barre chord tips acoustic','reduce hand tension guitar']},
   {id:'L4', level:'C', title:'Pentatonica Am Box 1–2', goals:['Box 1 pulito','Connessione a Box 2','Timing con backtrack'],
@@ -95,8 +104,10 @@ document.getElementById('embedLessonYt').addEventListener('click', ()=>{
   else { let v=null; try{ v=new URL(url).searchParams.get('v'); }catch(e){} if (!v && url.includes('youtu.be/')) v=url.split('youtu.be/')[1].split(/[?&]/)[0]; if (v) embed=`https://www.youtube.com/embed/${v}`; }
   if (embed){ const iframe=document.createElement('iframe'); iframe.src=embed; iframe.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"; iframe.allowFullscreen=true; wrap.appendChild(iframe); }
 });
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Practice tracker -------- */
+try{
 const catSel = document.getElementById('catSelect');
 const startBtn = document.getElementById('startTimer');
 const pauseBtn = document.getElementById('pauseTimer');
@@ -149,8 +160,10 @@ function renderTotals(){
   document.getElementById('totals').textContent = `Totale 7 giorni: ${mins} min`;
 }
 renderWeek(); renderTotals();
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Songs (with capo per-song and transposition) + autoscroll -------- */
+try{
 const SONGS = [
   {id:'P1', name:'Pop 4/4 — I–V–vi–IV (G)', bpm:92, chart:[
     'Intro | G  D  Em  C | x2',
@@ -258,8 +271,10 @@ document.getElementById('stopScroll').addEventListener('click', ()=>{
   if (scrollTimer) cancelAnimationFrame(scrollTimer);
   scrollTimer=null; document.getElementById('startScroll').disabled=false; document.getElementById('stopScroll').disabled=true;
 });
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Fingerpicking trainer -------- */
+try{
 const CHORDS={ "C":[0,1,0,2,3,'x'], "G":[3,0,0,0,2,3], "D":[2,3,2,0,'x','x'],
   "A":[0,2,2,2,0,'x'], "E":[0,0,1,2,2,0], "Am":[0,1,2,2,0,'x'],
   "Em":[0,0,0,2,2,0], "Dm":[1,3,2,0,'x','x'], "F":[1,1,2,3,3,1]
@@ -325,8 +340,10 @@ function stopFingerpicking(){
 }
 document.getElementById('startFp').addEventListener('click', startFingerpicking);
 document.getElementById('stopFp').addEventListener('click', stopFingerpicking);
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Tuner -------- */
+try{
 let audioCtx2, analyser, micSource, rafId;
 const bufLen = 2048; let buf = new Float32Array(bufLen);
 const noteEl = document.getElementById('note'), freqEl=document.getElementById('freq'), centsEl=document.getElementById('cents'), needle=document.getElementById('needle'), refA=document.getElementById('refA');
@@ -360,8 +377,10 @@ async function startTuner(){
 function stopTuner(){ if (rafId) cancelAnimationFrame(rafId); if (audioCtx2){ audioCtx2.close(); audioCtx2=null; } document.getElementById('startTuner').disabled=false; document.getElementById('stopTuner').disabled=true; }
 document.getElementById('startTuner').addEventListener('click', startTuner);
 document.getElementById('stopTuner').addEventListener('click', stopTuner);
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Metronome -------- */
+try{
 let metroCtx, metroTimer;
 const startMetro=document.getElementById('startMetro'), stopMetro=document.getElementById('stopMetro'), bpmInput=document.getElementById('bpm'), timeSig=document.getElementById('timeSig'), accentChk=document.getElementById('accent'), lights=document.getElementById('metroLights');
 function setupLights(){ lights.innerHTML=''; const count=parseInt(timeSig.value,10); for(let i=0;i<count;i++){ const d=document.createElement('div'); d.className='light'; lights.appendChild(d);} }
@@ -372,8 +391,10 @@ function startMetronome(){ const bpm=parseInt(bpmInput.value,10); const interval
   startMetro.disabled=true; stopMetro.disabled=false; }
 function stopMetronome(){ if(metroTimer) clearInterval(metroTimer); startMetro.disabled=false; stopMetro.disabled=true; }
 startMetro.addEventListener('click', startMetronome); stopMetro.addEventListener('click', stopMetronome);
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Chords (diagram & arpeggio) -------- */
+try{
 const chordSelect=document.getElementById('chordSelect'); Object.keys(CHORDS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; chordSelect.appendChild(o); }); chordSelect.value='C';
 const chordSvg=document.getElementById('chordDiagram');
 function drawChord(name){ const shape=CHORDS[name]; const w=260,h=220; chordSvg.setAttribute('viewBox',`0 0 ${w} ${h}`); chordSvg.innerHTML=''; const title=document.createElementNS('http://www.w3.org/2000/svg','text'); title.setAttribute('x','10'); title.setAttribute('y','20'); title.setAttribute('fill','currentColor'); title.setAttribute('font-size','18'); title.textContent=name; chordSvg.appendChild(title);
@@ -389,8 +410,10 @@ document.getElementById('playChord').addEventListener('click', ()=>{
   shape.forEach((val,i)=>{ if(val==='x') return; const base=freqs[i]; const f=typeof val==='number'? base*Math.pow(2,val/12):base; const o=ctx.createOscillator(), g=ctx.createGain();
     o.type='triangle'; o.frequency.value=f; g.gain.value=0.0001; o.connect(g); g.connect(ctx.destination); o.start(t); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.1,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.6); o.stop(t+0.7); t+=0.12; });
 });
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Progressions player -------- */
+try{
 const KEYS=["C","G","D","A","E","B","F#","C#","F","Bb","Eb","Ab","Db","Gb","Cb"];
 const keySel=document.getElementById('keySelect'); KEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; keySel.appendChild(o); }); keySel.value='C';
 const progSel=document.getElementById('progSelect'), progNow=document.getElementById('progNow'), progBpm=document.getElementById('progBpm'); let progTimer, progCtx;
@@ -406,8 +429,10 @@ function startProg(){ stopProg(); const bpm=parseInt(progBpm.value,10); const in
   document.getElementById('startProg').disabled=true; document.getElementById('stopProg').disabled=false; }
 function stopProg(){ if(progTimer) clearInterval(progTimer); document.getElementById('startProg').disabled=false; document.getElementById('stopProg').disabled=true; progNow.textContent='Pronto…'; }
 document.getElementById('startProg').addEventListener('click', startProg); document.getElementById('stopProg').addEventListener('click', stopProg);
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 
 /* -------- Ear, Scales, Exercises, Resources -------- */
+try{
 const scaleSvg=document.getElementById('scaleDiagram'), scaleSelect=document.getElementById('scaleSelect'), boxSelect=document.getElementById('boxSelect');
 function drawScale(scaleId, boxN){ const w=360,h=260; scaleSvg.setAttribute('viewBox',`0 0 ${w} ${h}`); scaleSvg.innerHTML=''; const left=40, top=30, right=w-20, bottom=h-20, frets=4, strings=6;
   const t=document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x','10'); t.setAttribute('y','20'); t.setAttribute('fill','currentColor'); t.setAttribute('font-size','18'); t.textContent=scaleId.replace('_',' ').toUpperCase()+' — Box '+boxN; scaleSvg.appendChild(t);
@@ -440,8 +465,9 @@ document.getElementById('embedYt').addEventListener('click', ()=>{
   else { let v=null; try{ v=new URL(url).searchParams.get('v'); }catch(e){} if(!v && url.includes('youtu.be/')) v=url.split('youtu.be/')[1].split(/[?&]/)[0]; if(v) embed=`https://www.youtube.com/embed/${v}`; }
   if(embed){ const iframe=document.createElement('iframe'); iframe.src=embed; iframe.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"; iframe.allowFullscreen=true; wrap.appendChild(iframe); } else { wrap.innerHTML='<p class="hint">URL non riconosciuto.</p>'; }
 });
-
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
 /* -------- Settings: Backup export/import + install prompt -------- */
+try{
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installMsg').textContent='Installazione disponibile. Premi "Prova a installare".'; });
 document.getElementById('tryInstall').addEventListener('click', async ()=>{
@@ -496,3 +522,4 @@ document.getElementById('resetAll').addEventListener('click', ()=>{
     document.getElementById('backupMsg').textContent='Dati azzerati.';
   }
 });
+}catch(err){console.error(err);showError(err.message||'Errore inizializzazione.');}
