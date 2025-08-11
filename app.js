@@ -7,6 +7,17 @@ document.querySelectorAll('.tab-button').forEach(btn=>{
     btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active');
   });
 });
+// Ensure tab and section match on load
+let initBtn = document.querySelector('.tab-button.active');
+let initTab = document.querySelector('.tab.active');
+if (!initBtn && initTab) initBtn = document.querySelector(`.tab-button[data-tab="${initTab.id}"]`);
+if (!initTab && initBtn) initTab = document.getElementById(initBtn.dataset.tab);
+if (!initBtn || !initTab){
+  initBtn = document.querySelector('.tab-button');
+  initTab = document.getElementById(initBtn.dataset.tab);
+}
+document.querySelectorAll('.tab-button').forEach(b=>b.classList.toggle('active', b===initBtn));
+document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t===initTab));
 navigator.serviceWorker?.addEventListener('message', e => {
   if (e.data?.type === 'SW_READY') document.body.classList.remove('updating');
 });
