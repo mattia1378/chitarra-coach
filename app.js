@@ -1,10 +1,17 @@
 // Tabs & Theme
 document.getElementById('themeToggle').addEventListener('click', ()=>document.documentElement.classList.toggle('light'));
-document.querySelectorAll('.tab-button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active');
+function activateTab(id){
+  document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`.tab-button[data-tab="${id}"]`)?.classList.add('active');
+  document.getElementById(id)?.classList.add('active');
+}
+document.querySelectorAll('.tab-button').forEach(a=>{
+  a.addEventListener('click', e=>{
+    e.preventDefault();
+    const id = a.dataset.tab;
+    activateTab(id);
+    history.replaceState(null,'','#'+id);
   });
 });
 // Ensure tab and section match on load
@@ -18,6 +25,7 @@ if (!initBtn || !initTab){
 }
 document.querySelectorAll('.tab-button').forEach(b=>b.classList.toggle('active', b===initBtn));
 document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t===initTab));
+
 navigator.serviceWorker?.addEventListener('message', e => {
   if (e.data?.type === 'SW_READY') document.body.classList.remove('updating');
 });
