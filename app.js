@@ -1,5 +1,6 @@
+function initApp(){
 // Tabs & Theme
-document.getElementById('themeToggle').addEventListener('click', ()=>document.documentElement.classList.toggle('light'));
+document.getElementById('themeToggle')?.addEventListener('click', ()=>document.documentElement.classList.toggle('light'));
 function activateTab(id){
   document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -79,14 +80,14 @@ function renderLesson(id){
   `;
 }
 renderLesson(lessonSel.value);
-lessonSel.addEventListener('change', e=>renderLesson(e.target.value));
+lessonSel?.addEventListener('change', e=>renderLesson(e.target.value));
 document.querySelectorAll('.ytSearch').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const q = encodeURIComponent(btn.dataset.q);
     window.open(`https://www.youtube.com/results?search_query=${q}`,'_blank');
   });
 });
-document.getElementById('embedLessonYt').addEventListener('click', ()=>{
+document.getElementById('embedLessonYt')?.addEventListener('click', ()=>{
   const url = document.getElementById('ytLessonUrl').value.trim();
   const wrap = document.getElementById('ytLessonWrap'); wrap.innerHTML='';
   if (!url) return;
@@ -105,18 +106,18 @@ const timerDisp = document.getElementById('timerDisplay');
 let t0=null, acc=0, ticking=null;
 function fmt(s){ const m=Math.floor(s/60), r=s%60; return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`; }
 function tick(){ const s = Math.floor((Date.now()-t0)/1000) + acc; timerDisp.textContent = fmt(s); }
-startBtn.addEventListener('click', ()=>{
+startBtn?.addEventListener('click', ()=>{
   if (ticking) return; t0 = Date.now(); ticking = setInterval(tick, 250);
   startBtn.disabled=true; pauseBtn.disabled=false; saveBtn.disabled=false;
 });
-pauseBtn.addEventListener('click', ()=>{
+pauseBtn?.addEventListener('click', ()=>{
   if (!ticking) return; clearInterval(ticking); ticking=null;
   const seconds = Math.floor((Date.now()-t0)/1000); acc += seconds; tick();
   startBtn.disabled=false; pauseBtn.disabled=true;
 });
 function loadLog(){ return JSON.parse(localStorage.getItem('ccppwa3_log') || '{}'); }
 function saveLog(obj){ localStorage.setItem('ccppwa3_log', JSON.stringify(obj)); }
-saveBtn.addEventListener('click', ()=>{
+saveBtn?.addEventListener('click', ()=>{
   if (t0){ if (ticking){ clearInterval(ticking); ticking=null; acc += Math.floor((Date.now()-t0)/1000); }
     const d = new Date(); const key = d.toISOString().slice(0,10);
     const log = loadLog(); log[key] = log[key] || {}; const cat = catSel.value;
@@ -232,18 +233,18 @@ function renderSong(id){
   });
 }
 renderSong(songSel.value);
-songSel.addEventListener('change', e=>renderSong(e.target.value));
-capoInput.addEventListener('input', ()=>{
+songSel?.addEventListener('change', e=>renderSong(e.target.value));
+capoInput?.addEventListener('input', ()=>{
   const id = songSel.value; const capos = loadCapos(); capos[id] = parseInt(capoInput.value,10)||0; saveCapos(capos); renderSong(id);
 });
 
 const speed = document.getElementById('scrollSpeed');
 const speedVal = document.getElementById('speedVal');
-speed.addEventListener('input', ()=>speedVal.textContent = speed.value);
+speed?.addEventListener('input', ()=>speedVal.textContent = speed.value);
 speedVal.textContent = speed.value;
 
 let scrollTimer=null, last=0;
-document.getElementById('startScroll').addEventListener('click', ()=>{
+document.getElementById('startScroll')?.addEventListener('click', ()=>{
   const pxs = parseInt(speed.value,10);
   last = performance.now();
   function step(ts){
@@ -254,7 +255,7 @@ document.getElementById('startScroll').addEventListener('click', ()=>{
   scrollTimer = requestAnimationFrame(step);
   document.getElementById('startScroll').disabled=true; document.getElementById('stopScroll').disabled=false;
 });
-document.getElementById('stopScroll').addEventListener('click', ()=>{
+document.getElementById('stopScroll')?.addEventListener('click', ()=>{
   if (scrollTimer) cancelAnimationFrame(scrollTimer);
   scrollTimer=null; document.getElementById('startScroll').disabled=false; document.getElementById('stopScroll').disabled=true;
 });
@@ -323,8 +324,8 @@ function stopFingerpicking(){
   document.getElementById('startFp').disabled=false; document.getElementById('stopFp').disabled=true;
   [...fpViz.children].forEach(el=>el.classList.remove('active'));
 }
-document.getElementById('startFp').addEventListener('click', startFingerpicking);
-document.getElementById('stopFp').addEventListener('click', stopFingerpicking);
+document.getElementById('startFp')?.addEventListener('click', startFingerpicking);
+document.getElementById('stopFp')?.addEventListener('click', stopFingerpicking);
 
 /* -------- Tuner -------- */
 let audioCtx2, analyser, micSource, rafId;
@@ -358,20 +359,20 @@ async function startTuner(){
   document.getElementById('startTuner').disabled=true; document.getElementById('stopTuner').disabled=false;
 }
 function stopTuner(){ if (rafId) cancelAnimationFrame(rafId); if (audioCtx2){ audioCtx2.close(); audioCtx2=null; } document.getElementById('startTuner').disabled=false; document.getElementById('stopTuner').disabled=true; }
-document.getElementById('startTuner').addEventListener('click', startTuner);
-document.getElementById('stopTuner').addEventListener('click', stopTuner);
+document.getElementById('startTuner')?.addEventListener('click', startTuner);
+document.getElementById('stopTuner')?.addEventListener('click', stopTuner);
 
 /* -------- Metronome -------- */
 let metroCtx, metroTimer;
 const startMetro=document.getElementById('startMetro'), stopMetro=document.getElementById('stopMetro'), bpmInput=document.getElementById('bpm'), timeSig=document.getElementById('timeSig'), accentChk=document.getElementById('accent'), lights=document.getElementById('metroLights');
 function setupLights(){ lights.innerHTML=''; const count=parseInt(timeSig.value,10); for(let i=0;i<count;i++){ const d=document.createElement('div'); d.className='light'; lights.appendChild(d);} }
-setupLights(); timeSig.addEventListener('change', setupLights);
+setupLights(); timeSig?.addEventListener('change', setupLights);
 function clickSound(accent=false){ if(!metroCtx) metroCtx=new (window.AudioContext||window.webkitAudioContext)(); const o=metroCtx.createOscillator(), g=metroCtx.createGain(); o.type='square'; o.frequency.value=accent?1200:880; g.gain.value=accent?0.15:0.08; o.connect(g); g.connect(metroCtx.destination); o.start(); o.stop(metroCtx.currentTime+0.05); }
 function startMetronome(){ const bpm=parseInt(bpmInput.value,10); const interval=60000/bpm; const beats=parseInt(timeSig.value,10); let beat=0; stopMetronome(); const lightsEls=[...lights.children];
   metroTimer=setInterval(()=>{ lightsEls.forEach(el=>el.classList.remove('active')); const accent=accentChk.checked && beat===0; lightsEls[beat].classList.add('active'); clickSound(accent); beat=(beat+1)%beats; }, interval);
   startMetro.disabled=true; stopMetro.disabled=false; }
 function stopMetronome(){ if(metroTimer) clearInterval(metroTimer); startMetro.disabled=false; stopMetro.disabled=true; }
-startMetro.addEventListener('click', startMetronome); stopMetro.addEventListener('click', stopMetronome);
+startMetro?.addEventListener('click', startMetronome); stopMetro?.addEventListener('click', stopMetronome);
 
 /* -------- Chords (diagram & arpeggio) -------- */
 const chordSelect=document.getElementById('chordSelect'); Object.keys(CHORDS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; chordSelect.appendChild(o); }); chordSelect.value='C';
@@ -379,12 +380,12 @@ const chordSvg=document.getElementById('chordDiagram');
 function drawChord(name){ const shape=CHORDS[name]; const w=260,h=220; chordSvg.setAttribute('viewBox',`0 0 ${w} ${h}`); chordSvg.innerHTML=''; const title=document.createElementNS('http://www.w3.org/2000/svg','text'); title.setAttribute('x','10'); title.setAttribute('y','20'); title.setAttribute('fill','currentColor'); title.setAttribute('font-size','18'); title.textContent=name; chordSvg.appendChild(title);
   const left=30, top=30, right=w-20, bottom=h-20, frets=5, strings=6;
   for (let i=0;i<=frets;i++){ const y=top+i*((bottom-top)/frets); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',left); l.setAttribute('x2',right); l.setAttribute('y1',y); l.setAttribute('y2',y); l.setAttribute('stroke','#2a3170'); chordSvg.appendChild(l); }
-  for (let s=0;s<strings;s'){ const x=left+s*((right-left)/(strings-1)); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',x); l.setAttribute('x2',x); l.setAttribute('y1',top); l.setAttribute('y2',bottom); l.setAttribute('stroke','#2a3170'); chordSvg.appendChild(l); }
+  for (let s=0;s<strings;s++){ const x=left+s*((right-left)/(strings-1)); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',x); l.setAttribute('x2',x); l.setAttribute('y1',top); l.setAttribute('y2',bottom); l.setAttribute('stroke','#2a3170'); chordSvg.appendChild(l); }
   const marksY=top-8; ['e','B','G','D','A','E'].forEach((_,i)=>{ const val=shape[i]; const x=left+i*((right-left)/5); const m=document.createElementNS('http://www.w3.org/2000/svg','text'); m.setAttribute('x',x-4); m.setAttribute('y',marksY); m.setAttribute('fill','currentColor'); m.setAttribute('font-size','14'); m.textContent = val==='x'?'✕':(val===0?'○':''); chordSvg.appendChild(m); });
   shape.forEach((val,i)=>{ if(typeof val==='number' && val>0){ const x=left+i*((right-left)/5); const y=top+(val-0.5)*((bottom-top)/5); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',10); c.setAttribute('fill','var(--accent)'); chordSvg.appendChild(c);} });
 }
-drawChord(chordSelect.value); chordSelect.addEventListener('change', e=>drawChord(e.target.value));
-document.getElementById('playChord').addEventListener('click', ()=>{
+drawChord(chordSelect.value); chordSelect?.addEventListener('change', e=>drawChord(e.target.value));
+document.getElementById('playChord')?.addEventListener('click', ()=>{
   const shape=CHORDS[chordSelect.value]; const freqs=[329.63,246.94,196.00,146.83,110.00,82.41]; const ctx=new (window.AudioContext||window.webkitAudioContext)(); let t=ctx.currentTime;
   shape.forEach((val,i)=>{ if(val==='x') return; const base=freqs[i]; const f=typeof val==='number'? base*Math.pow(2,val/12):base; const o=ctx.createOscillator(), g=ctx.createGain();
     o.type='triangle'; o.frequency.value=f; g.gain.value=0.0001; o.connect(g); g.connect(ctx.destination); o.start(t); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.1,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.6); o.stop(t+0.7); t+=0.12; });
@@ -405,7 +406,7 @@ function startProg(){ stopProg(); const bpm=parseInt(progBpm.value,10); const in
   progTimer=setInterval(()=>{ const deg=scheme[i%scheme.length]; const nm=chordName(keySel.value,deg); const f=noteFreq(nm.replace('m','')); if(f) playTriad(f); progNow.textContent=`→ ${deg} : ${nm}`; i++; }, interval*2);
   document.getElementById('startProg').disabled=true; document.getElementById('stopProg').disabled=false; }
 function stopProg(){ if(progTimer) clearInterval(progTimer); document.getElementById('startProg').disabled=false; document.getElementById('stopProg').disabled=true; progNow.textContent='Pronto…'; }
-document.getElementById('startProg').addEventListener('click', startProg); document.getElementById('stopProg').addEventListener('click', stopProg);
+document.getElementById('startProg')?.addEventListener('click', startProg); document.getElementById('stopProg')?.addEventListener('click', stopProg);
 
 /* -------- Ear, Scales, Exercises, Resources -------- */
 const scaleSvg=document.getElementById('scaleDiagram'), scaleSelect=document.getElementById('scaleSelect'), boxSelect=document.getElementById('boxSelect');
@@ -414,15 +415,15 @@ function drawScale(scaleId, boxN){ const w=360,h=260; scaleSvg.setAttribute('vie
   for(let i=0;i<=frets;i++){ const y=top+i*((bottom-top)/frets); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',left); l.setAttribute('x2',right); l.setAttribute('y1',y); l.setAttribute('y2',y); l.setAttribute('stroke','#2a3170'); scaleSvg.appendChild(l); }
   for(let s=0;s<strings;s++){ const x=left+s*((right-left)/(strings-1)); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',x); l.setAttribute('x2',x); l.setAttribute('y1',top); l.setAttribute('y2',bottom); l.setAttribute('stroke','#2a3170'); scaleSvg.appendChild(l); }
   for(let s=0;s<6;s++){ for(let p=0;p<2;p++){ const x=left+s*((right-left)/(strings-1)); const y=top+(p+0.5)*((bottom-top)/4); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',8); c.setAttribute('fill','var(--accent)'); scaleSvg.appendChild(c); } } }
-drawScale(scaleSelect.value, boxSelect.value); scaleSelect.addEventListener('change', ()=>drawScale(scaleSelect.value, boxSelect.value)); boxSelect.addEventListener('change', ()=>drawScale(scaleSelect.value, boxSelect.value));
-document.getElementById('playScale').addEventListener('click', ()=>{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); let t=ctx.currentTime; const scale=[55,65.41,73.42,82.41,98,110,130.81,146.83,164.81];
+drawScale(scaleSelect.value, boxSelect.value); scaleSelect?.addEventListener('change', ()=>drawScale(scaleSelect.value, boxSelect.value)); boxSelect?.addEventListener('change', ()=>drawScale(scaleSelect.value, boxSelect.value));
+document.getElementById('playScale')?.addEventListener('click', ()=>{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); let t=ctx.currentTime; const scale=[55,65.41,73.42,82.41,98,110,130.81,146.83,164.81];
   scale.forEach(f=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.type='triangle'; o.frequency.value=f; g.gain.value=0.001; o.connect(g); g.connect(ctx.destination); o.start(t); g.gain.exponentialRampToValueAtTime(0.08,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.35); o.stop(t+0.4); t+=0.22; });
 });
 
 let correctInterval=null; function intervalSemis(name){ return {"Unisono":0,"2ª min":1,"2ª mag":2,"3ª min":3,"3ª mag":4,"4ª giusta":5,"Tritono":6,"5ª giusta":7,"6ª min":8,"6ª mag":9,"7ª min":10,"7ª mag":11,"Ottava":12}[name]; }
 function playTwo(freq1,freq2){ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const t=ctx.currentTime; const mk=(f,dt)=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine'; o.frequency.value=f; g.gain.value=0.0001; o.connect(g); g.connect(ctx.destination); o.start(t+dt); g.gain.setValueAtTime(0.0001,t+dt); g.gain.exponentialRampToValueAtTime(0.15,t+dt+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+dt+0.6); o.stop(t+dt+0.7); }; mk(freq1,0); mk(freq2,0.75); }
-document.getElementById('playInterval').addEventListener('click',()=>{ const base=220; const semis=Math.floor(Math.random()*13); correctInterval=semis; playTwo(base, base*Math.pow(2,semis/12)); document.getElementById('earResult').textContent='Ascolta e scegli l\'intervallo…'; });
-document.getElementById('checkInterval').addEventListener('click',()=>{ const chosen=document.getElementById('intervalGuess').value; const ok=intervalSemis(chosen)===correctInterval; document.getElementById('earResult').textContent = ok? '✅ Corretto!' : '❌ Non esatto. Riprova!'; });
+document.getElementById('playInterval')?.addEventListener('click',()=>{ const base=220; const semis=Math.floor(Math.random()*13); correctInterval=semis; playTwo(base, base*Math.pow(2,semis/12)); document.getElementById('earResult').textContent='Ascolta e scegli l\'intervallo…'; });
+document.getElementById('checkInterval')?.addEventListener('click',()=>{ const chosen=document.getElementById('intervalGuess').value; const ok=intervalSemis(chosen)===correctInterval; document.getElementById('earResult').textContent = ok? '✅ Corretto!' : '❌ Non esatto. Riprova!'; });
 
 const todoEl=document.getElementById('todo'), newTask=document.getElementById('newTask'), addTask=document.getElementById('addTask'), resetDay=document.getElementById('resetDay'); const KEY='ccppwa3_tasks_v1';
 function loadTasks(){ let d=JSON.parse(localStorage.getItem(KEY)||'[]'); if(d.length===0){ d=[{t:'Riscaldamento dita 5 min',done:false},{t:'Barrè F transizioni lente',done:false},{t:'Strumming Pop 4/4 10 min',done:false},{t:'Pentatonica Box 1–2 5 min',done:false},{t:'Canzone: arpeggio semplice',done:false},]; localStorage.setItem(KEY, JSON.stringify(d)); } return d; }
@@ -432,9 +433,9 @@ function renderTasks(){ const data=loadTasks(); todoEl.innerHTML=''; data.forEac
   del.addEventListener('click',()=>{ const d=loadTasks(); d.splice(idx,1); localStorage.setItem(KEY, JSON.stringify(d)); renderTasks(); });
   li.appendChild(cb); li.appendChild(span); li.appendChild(del); todoEl.appendChild(li); });
 }
-renderTasks(); addTask.addEventListener('click',()=>{ const t=newTask.value.trim(); if(!t) return; const d=loadTasks(); d.push({t,done:false}); localStorage.setItem(KEY, JSON.stringify(d)); newTask.value=''; renderTasks(); }); resetDay.addEventListener('click',()=>{ const d=loadTasks(); d.forEach(x=>x.done=false); localStorage.setItem(KEY, JSON.stringify(d)); renderTasks(); });
+renderTasks(); addTask?.addEventListener('click',()=>{ const t=newTask.value.trim(); if(!t) return; const d=loadTasks(); d.push({t,done:false}); localStorage.setItem(KEY, JSON.stringify(d)); newTask.value=''; renderTasks(); }); resetDay?.addEventListener('click',()=>{ const d=loadTasks(); d.forEach(x=>x.done=false); localStorage.setItem(KEY, JSON.stringify(d)); renderTasks(); });
 
-document.getElementById('embedYt').addEventListener('click', ()=>{
+document.getElementById('embedYt')?.addEventListener('click', ()=>{
   const url=document.getElementById('ytUrl').value.trim(); const wrap=document.getElementById('ytWrap'); wrap.innerHTML=''; if(!url) return;
   let embed=''; if(url.includes('playlist?list=')){ const id=new URL(url).searchParams.get('list'); embed=`https://www.youtube.com/embed/videoseries?list=${id}`; }
   else { let v=null; try{ v=new URL(url).searchParams.get('v'); }catch(e){} if(!v && url.includes('youtu.be/')) v=url.split('youtu.be/')[1].split(/[?&]/)[0]; if(v) embed=`https://www.youtube.com/embed/${v}`; }
@@ -444,7 +445,7 @@ document.getElementById('embedYt').addEventListener('click', ()=>{
 /* -------- Settings: Backup export/import + install prompt -------- */
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installMsg').textContent='Installazione disponibile. Premi "Prova a installare".'; });
-document.getElementById('tryInstall').addEventListener('click', async ()=>{
+document.getElementById('tryInstall')?.addEventListener('click', async ()=>{
   if (deferredPrompt){ deferredPrompt.prompt(); const choice = await deferredPrompt.userChoice; document.getElementById('installMsg').textContent = 'Scelta: '+choice.outcome; deferredPrompt=null; }
   else { document.getElementById('installMsg').textContent='Su iOS usa Condividi → Aggiungi a Home.'; }
 });
@@ -462,7 +463,7 @@ function gatherAll(){
 function applyAll(all){
   Object.keys(all).forEach(k=> localStorage.setItem(k, all[k]));
 }
-document.getElementById('exportBtn').addEventListener('click', ()=>{
+document.getElementById('exportBtn')?.addEventListener('click', ()=>{
   const data = gatherAll();
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -470,7 +471,7 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   URL.revokeObjectURL(url);
   document.getElementById('backupMsg').textContent='Backup esportato.';
 });
-document.getElementById('importBtn').addEventListener('click', ()=>{
+document.getElementById('importBtn')?.addEventListener('click', ()=>{
   const f = document.getElementById('importFile').files[0];
   if (!f){ document.getElementById('backupMsg').textContent='Seleziona un file JSON.'; return; }
   const r = new FileReader();
@@ -485,7 +486,7 @@ document.getElementById('importBtn').addEventListener('click', ()=>{
   };
   r.readAsText(f);
 });
-document.getElementById('resetAll').addEventListener('click', ()=>{
+document.getElementById('resetAll')?.addEventListener('click', ()=>{
   if (confirm('Cancellare tutti i dati locali dell’app?')){
     const keys = [];
     for (let i=0;i<localStorage.length;i++){
@@ -496,3 +497,6 @@ document.getElementById('resetAll').addEventListener('click', ()=>{
     document.getElementById('backupMsg').textContent='Dati azzerati.';
   }
 });
+}
+
+document.addEventListener('DOMContentLoaded', initApp);
