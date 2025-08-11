@@ -1,154 +1,202 @@
 // Tabs & Theme
-document.getElementById('themeToggle').addEventListener('click', ()=>document.documentElement.classList.toggle('light'));
-function activateTab(id){
-  document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelector(`.tab-button[data-tab="${id}"]`)?.classList.add('active');
-  document.getElementById(id)?.classList.add('active');
-}
-document.querySelectorAll('.tab-button').forEach(a=>{
-  a.addEventListener('click', e=>{
-    e.preventDefault();
-    const id = a.dataset.tab;
-    activateTab(id);
-    history.replaceState(null,'','#'+id);
+function initTabsTheme() {
+  const themeToggle = document.getElementById('themeToggle');
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const tabs = document.querySelectorAll('.tab');
+  if (!themeToggle || tabButtons.length === 0 || tabs.length === 0) return;
+  themeToggle.addEventListener('click', () => document.documentElement.classList.toggle('light'));
+  function activateTab(id) {
+    tabButtons.forEach(b => b.classList.remove('active'));
+    tabs.forEach(t => t.classList.remove('active'));
+    document.querySelector(`.tab-button[data-tab="${id}"]`)?.classList.add('active');
+    document.getElementById(id)?.classList.add('active');
+  }
+  tabButtons.forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const id = a.dataset.tab;
+      activateTab(id);
+      history.replaceState(null, '', '#' + id);
+    });
   });
-});
-// Ensure tab and section match on load
-let initBtn = document.querySelector('.tab-button.active');
-let initTab = document.querySelector('.tab.active');
-if (!initBtn && initTab) initBtn = document.querySelector(`.tab-button[data-tab="${initTab.id}"]`);
-if (!initTab && initBtn) initTab = document.getElementById(initBtn.dataset.tab);
-if (!initBtn || !initTab){
-  initBtn = document.querySelector('.tab-button');
-  initTab = document.getElementById(initBtn.dataset.tab);
+  // Ensure tab and section match on load
+  let initBtn = document.querySelector('.tab-button.active');
+  let initTab = document.querySelector('.tab.active');
+  if (!initBtn && initTab) initBtn = document.querySelector(`.tab-button[data-tab="${initTab.id}"]`);
+  if (!initTab && initBtn) initTab = document.getElementById(initBtn.dataset.tab);
+  if (!initBtn || !initTab) {
+    initBtn = document.querySelector('.tab-button');
+    initTab = initBtn ? document.getElementById(initBtn.dataset.tab) : null;
+  }
+  if (initBtn && initTab) {
+    tabButtons.forEach(b => b.classList.toggle('active', b === initBtn));
+    tabs.forEach(t => t.classList.toggle('active', t === initTab));
+  }
 }
-document.querySelectorAll('.tab-button').forEach(b=>b.classList.toggle('active', b===initBtn));
-document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t===initTab));
+initTabsTheme();
 
 navigator.serviceWorker?.addEventListener('message', e => {
   if (e.data?.type === 'SW_READY') document.body.classList.remove('updating');
 });
 
 /* -------- Curriculum persistence -------- */
-document.querySelectorAll('ul.todo').forEach(list=>{
-  const key = 'ccppwa3_'+list.dataset.key;
-  const saved = JSON.parse(localStorage.getItem(key) || '[]');
-  if (saved.length) [...list.querySelectorAll('input[type=checkbox]')].forEach((c,i)=>c.checked=!!saved[i]);
-  const wrap = list.parentElement;
-  wrap.querySelector('.saveList').addEventListener('click', ()=>{
-    const arr = [...list.querySelectorAll('input[type=checkbox]')].map(c=>c.checked);
-    localStorage.setItem(key, JSON.stringify(arr));
+function initCurriculum() {
+  const lists = document.querySelectorAll('ul.todo');
+  if (lists.length === 0) return;
+  lists.forEach(list => {
+    const key = 'ccppwa3_' + list.dataset.key;
+    const saved = JSON.parse(localStorage.getItem(key) || '[]');
+    if (saved.length) [...list.querySelectorAll('input[type=checkbox]')].forEach((c, i) => c.checked = !!saved[i]);
+    const wrap = list.parentElement;
+    const saveBtn = wrap?.querySelector('.saveList');
+    const resetBtn = wrap?.querySelector('.resetList');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        const arr = [...list.querySelectorAll('input[type=checkbox]')].map(c => c.checked);
+        localStorage.setItem(key, JSON.stringify(arr));
+      });
+    }
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        [...list.querySelectorAll('input[type=checkbox]')].forEach(c => c.checked = false);
+        localStorage.removeItem(key);
+      });
+    }
   });
-  wrap.querySelector('.resetList').addEventListener('click', ()=>{
-    [...list.querySelectorAll('input[type=checkbox]')].forEach(c=>c.checked=false);
-    localStorage.removeItem(key);
-  });
-});
+}
+initCurriculum();
 
 /* -------- Lessons -------- */
-const LESSONS = [
-  {id:'L1', level:'A', title:'Accordi aperti 1', goals:['C, G, D, Em, Am','Cambi a tempo lento','Strumming ↓ in 4/4'],
-   steps:['Postura e impugnatura plettro','Suona corde a vuoto col metronomo (60 BPM)','Impara le posizioni: C, G, D, Em, Am','Cambia C↔G e G↔D lentamente','Strumming solo ↓ (4 colpi x battuta)'],
-   suggest:['beginner guitar chords italian','how to change chords cleanly guitar','strumming patterns 4/4 beginner']},
-  {id:'L2', level:'A', title:'Strumming alternato', goals:['↓↑ rilassato','Ghost stroke e dinamica','Muting con palmo'],
-   steps:['Metronomo 70–80 BPM','Pattern ↓ ↑ ↓ ↑ su Em','Aggiungi accento sul 2 e 4','Ghost stroke sui movimenti in aria','Palm muting leggero su ponte'],
-   suggest:['strumming down up tutorial','accent on 2 and 4 guitar','palm muting acoustic guitar']},
-  {id:'L3', level:'B', title:'Barrè base (F forma E)', goals:['Pollice dietro corretto','Pressione minima','Cambi lenti a/b'], 
-   steps:['Riscalda dita','Forma F al 1° tasto (mini-barrè prime 2 corde)','Aggiungi barrè completo quando pulito','Cambia C → F → C','Metronomo 60 BPM, 1 battuta per cambio'],
-   suggest:['how to play F barre chord','barre chord tips acoustic','reduce hand tension guitar']},
-  {id:'L4', level:'C', title:'Pentatonica Am Box 1–2', goals:['Box 1 pulito','Connessione a Box 2','Timing con backtrack'],
-   steps:['Memorizza Box 1 (quinta posizione)','Aggiungi note passaggio verso 8–10','Backtrack Am 80–100 BPM','Frasi 2 battute, lascia 2 battute di respiro'],
-   suggest:['pentatonic box 1 tutorial','connect pentatonic boxes','backing track A minor 90 bpm']},
-  {id:'L5', level:'D', title:'CAGED in mix ritmico', goals:['Forme C/A/G/E/D su accordi reali','Transizioni fluide','Strumming + arpeggi'],
-   steps:['Tonalità G','Progressione I–V–vi–IV con forme CAGED diverse','Alterna 2 misure strum + 2 misure arpeggio','Registra e riascolta'],
-   suggest:['CAGED system explained','pop progression I V vi IV guitar','fingerpicking arpeggio beginner']},
-];
-const lessonSel = document.getElementById('lessonSelect');
-LESSONS.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=`${l.id} · ${l.title}`; lessonSel.appendChild(o); });
-lessonSel.value = LESSONS[0].id;
-const lessonInfo = document.getElementById('lessonInfo');
-function renderLesson(id){
-  const L = LESSONS.find(x=>x.id===id);
-  lessonInfo.innerHTML = `
-    <h3>${L.title} <small class="badge">Livello ${L.level}</small></h3>
-    <h4>Obiettivi</h4>
-    <ul>${L.goals.map(g=>`<li>${g}</li>`).join('')}</ul>
-    <h4>Passi</h4>
-    <ol class="steps">${L.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
-  `;
-}
-renderLesson(lessonSel.value);
-lessonSel.addEventListener('change', e=>renderLesson(e.target.value));
-document.querySelectorAll('.ytSearch').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const q = encodeURIComponent(btn.dataset.q);
-    window.open(`https://www.youtube.com/results?search_query=${q}`,'_blank');
+function initLessons() {
+  const lessonSel = document.getElementById('lessonSelect');
+  const lessonInfo = document.getElementById('lessonInfo');
+  if (!lessonSel || !lessonInfo) return;
+  const LESSONS = [
+    {id:'L1', level:'A', title:'Accordi aperti 1', goals:['C, G, D, Em, Am','Cambi a tempo lento','Strumming ↓ in 4/4'],
+     steps:['Postura e impugnatura plettro','Suona corde a vuoto col metronomo (60 BPM)','Impara le posizioni: C, G, D, Em, Am','Cambia C↔G e G↔D lentamente','Strumming solo ↓ (4 colpi x battuta)'],
+     suggest:['beginner guitar chords italian','how to change chords cleanly guitar','strumming patterns 4/4 beginner']},
+    {id:'L2', level:'A', title:'Strumming alternato', goals:['↓↑ rilassato','Ghost stroke e dinamica','Muting con palmo'],
+     steps:['Metronomo 70–80 BPM','Pattern ↓ ↑ ↓ ↑ su Em','Aggiungi accento sul 2 e 4','Ghost stroke sui movimenti in aria','Palm muting leggero su ponte'],
+     suggest:['strumming down up tutorial','accent on 2 and 4 guitar','palm muting acoustic guitar']},
+    {id:'L3', level:'B', title:'Barrè base (F forma E)', goals:['Pollice dietro corretto','Pressione minima','Cambi lenti a/b'],
+     steps:['Riscalda dita','Forma F al 1° tasto (mini-barrè prime 2 corde)','Aggiungi barrè completo quando pulito','Cambia C → F → C','Metronomo 60 BPM, 1 battuta per cambio'],
+     suggest:['how to play F barre chord','barre chord tips acoustic','reduce hand tension guitar']},
+    {id:'L4', level:'C', title:'Pentatonica Am Box 1–2', goals:['Box 1 pulito','Connessione a Box 2','Timing con backtrack'],
+     steps:['Memorizza Box 1 (quinta posizione)','Aggiungi note passaggio verso 8–10','Backtrack Am 80–100 BPM','Frasi 2 battute, lascia 2 battute di respiro'],
+     suggest:['pentatonic box 1 tutorial','connect pentatonic boxes','backing track A minor 90 bpm']},
+    {id:'L5', level:'D', title:'CAGED in mix ritmico', goals:['Forme C/A/G/E/D su accordi reali','Transizioni fluide','Strumming + arpeggi'],
+     steps:['Tonalità G','Progressione I–V–vi–IV con forme CAGED diverse','Alterna 2 misure strum + 2 misure arpeggio','Registra e riascolta'],
+     suggest:['CAGED system explained','pop progression I V vi IV guitar','fingerpicking arpeggio beginner']},
+  ];
+  LESSONS.forEach(l => { const o = document.createElement('option'); o.value = l.id; o.textContent = `${l.id} · ${l.title}`; lessonSel.appendChild(o); });
+  lessonSel.value = LESSONS[0].id;
+  function renderLesson(id) {
+    const L = LESSONS.find(x => x.id === id);
+    if (!L) return;
+    lessonInfo.innerHTML = `
+      <h3>${L.title} <small class="badge">Livello ${L.level}</small></h3>
+      <h4>Obiettivi</h4>
+      <ul>${L.goals.map(g => `<li>${g}</li>`).join('')}</ul>
+      <h4>Passi</h4>
+      <ol class="steps">${L.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+    `;
+  }
+  renderLesson(lessonSel.value);
+  lessonSel.addEventListener('change', e => renderLesson(e.target.value));
+  document.querySelectorAll('.ytSearch').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = encodeURIComponent(btn.dataset.q);
+      window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank');
+    });
   });
-});
-document.getElementById('embedLessonYt').addEventListener('click', ()=>{
-  const url = document.getElementById('ytLessonUrl').value.trim();
-  const wrap = document.getElementById('ytLessonWrap'); wrap.innerHTML='';
-  if (!url) return;
-  let embed = '';
-  if (url.includes('playlist?list=')){ const id = new URL(url).searchParams.get('list'); embed = `https://www.youtube.com/embed/videoseries?list=${id}`; }
-  else { let v=null; try{ v=new URL(url).searchParams.get('v'); }catch(e){} if (!v && url.includes('youtu.be/')) v=url.split('youtu.be/')[1].split(/[?&]/)[0]; if (v) embed=`https://www.youtube.com/embed/${v}`; }
-  if (embed){ const iframe=document.createElement('iframe'); iframe.src=embed; iframe.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"; iframe.allowFullscreen=true; wrap.appendChild(iframe); }
-});
+  const embedBtn = document.getElementById('embedLessonYt');
+  const ytLessonUrl = document.getElementById('ytLessonUrl');
+  const ytLessonWrap = document.getElementById('ytLessonWrap');
+  if (embedBtn && ytLessonUrl && ytLessonWrap) {
+    embedBtn.addEventListener('click', () => {
+      const url = ytLessonUrl.value.trim();
+      ytLessonWrap.innerHTML = '';
+      if (!url) return;
+      let embed = '';
+      if (url.includes('playlist?list=')) {
+        const id = new URL(url).searchParams.get('list');
+        embed = `https://www.youtube.com/embed/videoseries?list=${id}`;
+      } else {
+        let v = null; try { v = new URL(url).searchParams.get('v'); } catch (e) {}
+        if (!v && url.includes('youtu.be/')) v = url.split('youtu.be/')[1].split(/[?&]/)[0];
+        if (v) embed = `https://www.youtube.com/embed/${v}`;
+      }
+      if (embed) {
+        const iframe = document.createElement('iframe');
+        iframe.src = embed;
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.allowFullscreen = true;
+        ytLessonWrap.appendChild(iframe);
+      }
+    });
+  }
+}
+initLessons();
 
 /* -------- Practice tracker -------- */
-const catSel = document.getElementById('catSelect');
-const startBtn = document.getElementById('startTimer');
-const pauseBtn = document.getElementById('pauseTimer');
-const saveBtn = document.getElementById('saveTimer');
-const timerDisp = document.getElementById('timerDisplay');
-let t0=null, acc=0, ticking=null;
-function fmt(s){ const m=Math.floor(s/60), r=s%60; return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`; }
-function tick(){ const s = Math.floor((Date.now()-t0)/1000) + acc; timerDisp.textContent = fmt(s); }
-startBtn.addEventListener('click', ()=>{
-  if (ticking) return; t0 = Date.now(); ticking = setInterval(tick, 250);
-  startBtn.disabled=true; pauseBtn.disabled=false; saveBtn.disabled=false;
-});
-pauseBtn.addEventListener('click', ()=>{
-  if (!ticking) return; clearInterval(ticking); ticking=null;
-  const seconds = Math.floor((Date.now()-t0)/1000); acc += seconds; tick();
-  startBtn.disabled=false; pauseBtn.disabled=true;
-});
-function loadLog(){ return JSON.parse(localStorage.getItem('ccppwa3_log') || '{}'); }
-function saveLog(obj){ localStorage.setItem('ccppwa3_log', JSON.stringify(obj)); }
-saveBtn.addEventListener('click', ()=>{
-  if (t0){ if (ticking){ clearInterval(ticking); ticking=null; acc += Math.floor((Date.now()-t0)/1000); }
-    const d = new Date(); const key = d.toISOString().slice(0,10);
-    const log = loadLog(); log[key] = log[key] || {}; const cat = catSel.value;
-    log[key][cat] = (log[key][cat]||0) + acc;
-    saveLog(log); acc=0; timerDisp.textContent='00:00'; startBtn.disabled=false; pauseBtn.disabled=true; saveBtn.disabled=true;
-    renderWeek(); renderTotals();
+function initPracticeTracker() {
+  const catSel = document.getElementById('catSelect');
+  const startBtn = document.getElementById('startTimer');
+  const pauseBtn = document.getElementById('pauseTimer');
+  const saveBtn = document.getElementById('saveTimer');
+  const timerDisp = document.getElementById('timerDisplay');
+  const weekBars = document.getElementById('weekBars');
+  const totalsEl = document.getElementById('totals');
+  if (!catSel || !startBtn || !pauseBtn || !saveBtn || !timerDisp || !weekBars || !totalsEl) return;
+  let t0 = null, acc = 0, ticking = null;
+  function fmt(s) { const m = Math.floor(s / 60), r = s % 60; return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`; }
+  function tick() { const s = Math.floor((Date.now() - t0) / 1000) + acc; timerDisp.textContent = fmt(s); }
+  startBtn.addEventListener('click', () => {
+    if (ticking) return; t0 = Date.now(); ticking = setInterval(tick, 250);
+    startBtn.disabled = true; pauseBtn.disabled = false; saveBtn.disabled = false;
+  });
+  pauseBtn.addEventListener('click', () => {
+    if (!ticking) return; clearInterval(ticking); ticking = null;
+    const seconds = Math.floor((Date.now() - t0) / 1000); acc += seconds; tick();
+    startBtn.disabled = false; pauseBtn.disabled = true;
+  });
+  function loadLog() { return JSON.parse(localStorage.getItem('ccppwa3_log') || '{}'); }
+  function saveLog(obj) { localStorage.setItem('ccppwa3_log', JSON.stringify(obj)); }
+  saveBtn.addEventListener('click', () => {
+    if (t0) {
+      if (ticking) { clearInterval(ticking); ticking = null; acc += Math.floor((Date.now() - t0) / 1000); }
+      const d = new Date(); const key = d.toISOString().slice(0, 10);
+      const log = loadLog(); log[key] = log[key] || {}; const cat = catSel.value;
+      log[key][cat] = (log[key][cat] || 0) + acc;
+      saveLog(log); acc = 0; timerDisp.textContent = '00:00'; startBtn.disabled = false; pauseBtn.disabled = true; saveBtn.disabled = true;
+      renderWeek(); renderTotals();
+    }
+  });
+  function renderWeek() {
+    weekBars.innerHTML = '';
+    const log = loadLog(); const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now); d.setDate(now.getDate() - i); const key = d.toISOString().slice(0, 10);
+      const day = log[key] || {}; const total = Object.values(day).reduce((a, b) => a + b, 0);
+      const div = document.createElement('div'); div.className = 'bar';
+      const fill = document.createElement('div'); fill.className = 'fill';
+      const max = 60 * 45; const h = Math.min(100, Math.round(100 * total / max));
+      fill.style.height = h + '%';
+      div.appendChild(fill);
+      const lab = document.createElement('small'); lab.textContent = key.slice(5); lab.style.position = 'absolute'; lab.style.top = '4px'; lab.style.left = '6px'; lab.style.color = 'var(--muted)';
+      div.appendChild(lab);
+      weekBars.appendChild(div);
+    }
   }
-});
-function renderWeek(){
-  const wrap = document.getElementById('weekBars'); wrap.innerHTML='';
-  const log = loadLog(); const now = new Date();
-  for (let i=6;i>=0;i--){
-    const d = new Date(now); d.setDate(now.getDate()-i); const key = d.toISOString().slice(0,10);
-    const day = log[key] || {}; const total = Object.values(day).reduce((a,b)=>a+b,0);
-    const div = document.createElement('div'); div.className='bar';
-    const fill = document.createElement('div'); fill.className='fill';
-    const max = 60*45; // 45 min cap for bar
-    const h = Math.min(100, Math.round(100*total/max));
-    fill.style.height = h+'%';
-    div.appendChild(fill);
-    const lab = document.createElement('small'); lab.textContent = key.slice(5); lab.style.position='absolute'; lab.style.top='4px'; lab.style.left='6px'; lab.style.color='var(--muted)';
-    div.appendChild(lab);
-    wrap.appendChild(div);
+  function renderTotals() {
+    const log = loadLog(); const now = new Date(); let week = 0;
+    for (let i = 0; i < 7; i++) { const d = new Date(now); d.setDate(now.getDate() - i); const key = d.toISOString().slice(0, 10); const day = log[key] || {}; week += Object.values(day).reduce((a, b) => a + b, 0); }
+    const mins = Math.round(week / 60);
+    totalsEl.textContent = `Totale 7 giorni: ${mins} min`;
   }
+  renderWeek(); renderTotals();
 }
-function renderTotals(){
-  const log = loadLog(); const now = new Date(); let week=0;
-  for (let i=0;i<7;i++){ const d = new Date(now); d.setDate(now.getDate()-i); const key=d.toISOString().slice(0,10); const day=log[key]||{}; week += Object.values(day).reduce((a,b)=>a+b,0); }
-  const mins = Math.round(week/60);
-  document.getElementById('totals').textContent = `Totale 7 giorni: ${mins} min`;
-}
-renderWeek(); renderTotals();
+initPracticeTracker();
 
 /* -------- Songs (with capo per-song and transposition) + autoscroll -------- */
 const SONGS = [
@@ -265,66 +313,74 @@ const CHORDS={ "C":[0,1,0,2,3,'x'], "G":[3,0,0,0,2,3], "D":[2,3,2,0,'x','x'],
   "Em":[0,0,0,2,2,0], "Dm":[1,3,2,0,'x','x'], "F":[1,1,2,3,3,1]
 };
 const BASS_ROOT = { "C":5, "G":6, "D":4, "A":5, "E":6, "Am":5, "Em":6, "Dm":4, "F":6 };
-const fpChordSel = document.getElementById('fpChord');
-Object.keys(CHORDS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; fpChordSel.appendChild(o); });
-fpChordSel.value='C';
-const fpViz = document.getElementById('fpViz');
-function renderFpStrings(){
-  fpViz.innerHTML='';
-  const names=['1^ e','2^ B','3^ G','4^ D','5^ A','6^ E'];
-  for (let i=6;i>=1;i--){
-    const d = document.createElement('div'); d.className='s'; d.dataset.str = names[6-i];
-    d.id = 'fp-s'+i; fpViz.appendChild(d);
+function initFingerpicking() {
+  const fpChordSel = document.getElementById('fpChord');
+  const fpViz = document.getElementById('fpViz');
+  const startBtn = document.getElementById('startFp');
+  const stopBtn = document.getElementById('stopFp');
+  const patternSel = document.getElementById('fpPattern');
+  const bpmInput = document.getElementById('fpBpm');
+  if (!fpChordSel || !fpViz || !startBtn || !stopBtn || !patternSel || !bpmInput) return;
+  Object.keys(CHORDS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; fpChordSel.appendChild(o); });
+  fpChordSel.value='C';
+  function renderFpStrings(){
+    fpViz.innerHTML='';
+    const names=['1^ e','2^ B','3^ G','4^ D','5^ A','6^ E'];
+    for (let i=6;i>=1;i--){
+      const d = document.createElement('div'); d.className='s'; d.dataset.str = names[6-i];
+      d.id = 'fp-s'+i; fpViz.appendChild(d);
+    }
   }
+  renderFpStrings();
+  let fpTimer=null, fpCtx=null;
+  function playString(stringIdx, chordName){
+    const freqsOpen = {1:329.63,2:246.94,3:196.00,4:146.83,5:110.00,6:82.41};
+    const shape = CHORDS[chordName];
+    const val = shape[6-stringIdx];
+    let base = freqsOpen[stringIdx];
+    let f = (typeof val==='number' && val>0) ? base * Math.pow(2, val/12) : base;
+    if (!fpCtx) fpCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const o=fpCtx.createOscillator(), g=fpCtx.createGain();
+    o.type='triangle'; o.frequency.value=f; g.gain.value=0.0001; o.connect(g); g.connect(fpCtx.destination);
+    const t = fpCtx.currentTime;
+    o.start(t); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.12, t+0.02); g.gain.exponentialRampToValueAtTime(0.0001, t+0.35); o.stop(t+0.4);
+  }
+  function highlight(stringIdx){
+    [...fpViz.children].forEach(el=>el.classList.remove('active'));
+    const el = document.getElementById('fp-s'+stringIdx); if (el) el.classList.add('active');
+  }
+  function startFingerpicking(){
+    stopFingerpicking();
+    const patternId = patternSel.value;
+    const bpm = parseInt(bpmInput.value,10);
+    const chord = fpChordSel.value;
+    const bass = BASS_ROOT[chord] || 6;
+    const alt = Math.max(4, bass-2);
+    let seq = [];
+    if (patternId==='arp'){ seq = [6,3,2,1,3,2,1,2]; }
+    else if (patternId==='travis'){ seq = ['B',3,'b',2,'B',3,'b',2]; }
+    else if (patternId==='waltz'){ seq = [5,3,2,5,3,2]; }
+    seq = seq.map(x=> x==='B'? bass : (x==='b'? alt : x) );
+    const interval = 60000/bpm/2;
+    let i=0;
+    fpTimer = setInterval(()=>{
+      const s = seq[i % seq.length];
+      highlight(s);
+      playString(s, chord);
+      i++;
+    }, interval);
+    startBtn.disabled=true; stopBtn.disabled=false;
+  }
+  function stopFingerpicking(){
+    if (fpTimer) clearInterval(fpTimer);
+    fpTimer=null;
+    startBtn.disabled=false; stopBtn.disabled=true;
+    [...fpViz.children].forEach(el=>el.classList.remove('active'));
+  }
+  startBtn.addEventListener('click', startFingerpicking);
+  stopBtn.addEventListener('click', stopFingerpicking);
 }
-renderFpStrings();
-let fpTimer=null, fpCtx=null;
-function playString(stringIdx, chordName){
-  const freqsOpen = {1:329.63,2:246.94,3:196.00,4:146.83,5:110.00,6:82.41};
-  const shape = CHORDS[chordName];
-  const val = shape[6-stringIdx]; // shape is [1st,2nd,3rd,4th,5th,6th]
-  let base = freqsOpen[stringIdx];
-  let f = (typeof val==='number' && val>0) ? base * Math.pow(2, val/12) : base;
-  if (!fpCtx) fpCtx = new (window.AudioContext||window.webkitAudioContext)();
-  const o=fpCtx.createOscillator(), g=fpCtx.createGain();
-  o.type='triangle'; o.frequency.value=f; g.gain.value=0.0001; o.connect(g); g.connect(fpCtx.destination);
-  const t = fpCtx.currentTime;
-  o.start(t); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.12, t+0.02); g.gain.exponentialRampToValueAtTime(0.0001, t+0.35); o.stop(t+0.4);
-}
-function highlight(stringIdx){
-  [...fpViz.children].forEach(el=>el.classList.remove('active'));
-  const el = document.getElementById('fp-s'+stringIdx); if (el) el.classList.add('active');
-}
-function startFingerpicking(){
-  stopFingerpicking();
-  const patternId = document.getElementById('fpPattern').value;
-  const bpm = parseInt(document.getElementById('fpBpm').value,10);
-  const chord = fpChordSel.value;
-  const bass = BASS_ROOT[chord] || 6;
-  const alt = Math.max(4, bass-2);
-  let seq = [];
-  if (patternId==='arp'){ seq = [6,3,2,1,3,2,1,2]; }
-  else if (patternId==='travis'){ seq = ['B',3,'b',2,'B',3,'b',2]; }
-  else if (patternId==='waltz'){ seq = [5,3,2,5,3,2]; }
-  seq = seq.map(x=> x==='B'? bass : (x==='b'? alt : x) );
-  const interval = 60000/bpm/2; // 8th notes
-  let i=0;
-  fpTimer = setInterval(()=>{
-    const s = seq[i % seq.length];
-    highlight(s);
-    playString(s, chord);
-    i++;
-  }, interval);
-  document.getElementById('startFp').disabled=true; document.getElementById('stopFp').disabled=false;
-}
-function stopFingerpicking(){
-  if (fpTimer) clearInterval(fpTimer);
-  fpTimer=null;
-  document.getElementById('startFp').disabled=false; document.getElementById('stopFp').disabled=true;
-  [...fpViz.children].forEach(el=>el.classList.remove('active'));
-}
-document.getElementById('startFp').addEventListener('click', startFingerpicking);
-document.getElementById('stopFp').addEventListener('click', stopFingerpicking);
+initFingerpicking();
 
 /* -------- Tuner -------- */
 let audioCtx2, analyser, micSource, rafId;
@@ -379,7 +435,7 @@ const chordSvg=document.getElementById('chordDiagram');
 function drawChord(name){ const shape=CHORDS[name]; const w=260,h=220; chordSvg.setAttribute('viewBox',`0 0 ${w} ${h}`); chordSvg.innerHTML=''; const title=document.createElementNS('http://www.w3.org/2000/svg','text'); title.setAttribute('x','10'); title.setAttribute('y','20'); title.setAttribute('fill','currentColor'); title.setAttribute('font-size','18'); title.textContent=name; chordSvg.appendChild(title);
   const left=30, top=30, right=w-20, bottom=h-20, frets=5, strings=6;
   for (let i=0;i<=frets;i++){ const y=top+i*((bottom-top)/frets); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',left); l.setAttribute('x2',right); l.setAttribute('y1',y); l.setAttribute('y2',y); l.setAttribute('stroke','#2a3170'); chordSvg.appendChild(l); }
-  for (let s=0;s<strings;s'){ const x=left+s*((right-left)/(strings-1)); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',x); l.setAttribute('x2',x); l.setAttribute('y1',top); l.setAttribute('y2',bottom); l.setAttribute('stroke','#2a3170'); chordSvg.appendChild(l); }
+  for (let s=0;s<strings;s++){ const x=left+s*((right-left)/(strings-1)); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',x); l.setAttribute('x2',x); l.setAttribute('y1',top); l.setAttribute('y2',bottom); l.setAttribute('stroke','#2a3170'); chordSvg.appendChild(l); }
   const marksY=top-8; ['e','B','G','D','A','E'].forEach((_,i)=>{ const val=shape[i]; const x=left+i*((right-left)/5); const m=document.createElementNS('http://www.w3.org/2000/svg','text'); m.setAttribute('x',x-4); m.setAttribute('y',marksY); m.setAttribute('fill','currentColor'); m.setAttribute('font-size','14'); m.textContent = val==='x'?'✕':(val===0?'○':''); chordSvg.appendChild(m); });
   shape.forEach((val,i)=>{ if(typeof val==='number' && val>0){ const x=left+i*((right-left)/5); const y=top+(val-0.5)*((bottom-top)/5); const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',10); c.setAttribute('fill','var(--accent)'); chordSvg.appendChild(c);} });
 }
@@ -391,21 +447,31 @@ document.getElementById('playChord').addEventListener('click', ()=>{
 });
 
 /* -------- Progressions player -------- */
-const KEYS=["C","G","D","A","E","B","F#","C#","F","Bb","Eb","Ab","Db","Gb","Cb"];
-const keySel=document.getElementById('keySelect'); KEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; keySel.appendChild(o); }); keySel.value='C';
-const progSel=document.getElementById('progSelect'), progNow=document.getElementById('progNow'), progBpm=document.getElementById('progBpm'); let progTimer, progCtx;
-function chordName(key, degree){ const SEMI=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]; const mapFlat={'Db':'C#','Eb':'D#','Gb':'F#','Ab':'G#','Bb':'A#','Cb':'B'}; key = mapFlat[key]||key; const keyIndex=SEMI.indexOf(key); const major=[0,2,4,5,7,9,11]; const deg={"I":0,"ii":1,"iii":2,"IV":3,"V":4,"vi":5,"vii":6}[degree]; const pitch=(keyIndex+major[deg])%12; const name=SEMI[pitch]; const qual = degree===degree.toUpperCase()? '':'m'; return name+qual; }
-function noteFreq(name){ const SEMI={"C":261.63,"C#":277.18,"D":293.66,"D#":311.13,"E":329.63,"F":349.23,"F#":369.99,"G":392.00,"G#":415.30,"A":440.00,"A#":466.16,"B":493.88}; return SEMI[name]; }
-function playTriad(freq){ if(!progCtx) progCtx=new (window.AudioContext||window.webkitAudioContext)(); const g=progCtx.createGain(); g.gain.value=0.1; g.connect(progCtx.destination);
-  [0,4,7].forEach(semi=>{ const o=progCtx.createOscillator(), gg=progCtx.createGain(); o.type='triangle'; o.frequency.value=freq*Math.pow(2,semi/12); gg.gain.value=0.0001; o.connect(gg); gg.connect(g);
-    const t=progCtx.currentTime; o.start(t); gg.gain.setValueAtTime(0.0001,t); gg.gain.exponentialRampToValueAtTime(0.15,t+0.02); gg.gain.exponentialRampToValueAtTime(0.0001,t+0.8); o.stop(t+0.9);
-  });
+function initProgressions() {
+  const keySel=document.getElementById('keySelect');
+  const progSel=document.getElementById('progSelect');
+  const progNow=document.getElementById('progNow');
+  const progBpm=document.getElementById('progBpm');
+  const startBtn=document.getElementById('startProg');
+  const stopBtn=document.getElementById('stopProg');
+  if (!keySel || !progSel || !progNow || !progBpm || !startBtn || !stopBtn) return;
+  const KEYS=["C","G","D","A","E","B","F#","C#","F","Bb","Eb","Ab","Db","Gb","Cb"];
+  KEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; keySel.appendChild(o); }); keySel.value='C';
+  let progTimer, progCtx;
+  function chordName(key, degree){ const SEMI=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]; const mapFlat={'Db':'C#','Eb':'D#','Gb':'F#','Ab':'G#','Bb':'A#','Cb':'B'}; key = mapFlat[key]||key; const keyIndex=SEMI.indexOf(key); const major=[0,2,4,5,7,9,11]; const deg={"I":0,"ii":1,"iii":2,"IV":3,"V":4,"vi":5,"vii":6}[degree]; const pitch=(keyIndex+major[deg])%12; const name=SEMI[pitch]; const qual = degree===degree.toUpperCase()? '':'m'; return name+qual; }
+  function noteFreq(name){ const SEMI={"C":261.63,"C#":277.18,"D":293.66,"D#":311.13,"E":329.63,"F":349.23,"F#":369.99,"G":392.00,"G#":415.30,"A":440.00,"A#":466.16,"B":493.88}; return SEMI[name]; }
+  function playTriad(freq){ if(!progCtx) progCtx=new (window.AudioContext||window.webkitAudioContext)(); const g=progCtx.createGain(); g.gain.value=0.1; g.connect(progCtx.destination);
+    [0,4,7].forEach(semi=>{ const o=progCtx.createOscillator(), gg=progCtx.createGain(); o.type='triangle'; o.frequency.value=freq*Math.pow(2,semi/12); gg.gain.value=0.0001; o.connect(gg); gg.connect(g);
+      const t=progCtx.currentTime; o.start(t); gg.gain.setValueAtTime(0.0001,t); gg.gain.exponentialRampToValueAtTime(0.15,t+0.02); gg.gain.exponentialRampToValueAtTime(0.0001,t+0.8); o.stop(t+0.9);
+    });
+  }
+  function startProg(){ stopProg(); const bpm=parseInt(progBpm.value,10); const interval=60000/bpm; const scheme=progSel.value.split('-'); let i=0;
+    progTimer=setInterval(()=>{ const deg=scheme[i%scheme.length]; const nm=chordName(keySel.value,deg); const f=noteFreq(nm.replace('m','')); if(f) playTriad(f); progNow.textContent=`→ ${deg} : ${nm}`; i++; }, interval*2);
+    startBtn.disabled=true; stopBtn.disabled=false; }
+  function stopProg(){ if(progTimer) clearInterval(progTimer); startBtn.disabled=false; stopBtn.disabled=true; progNow.textContent='Pronto…'; }
+  startBtn.addEventListener('click', startProg); stopBtn.addEventListener('click', stopProg);
 }
-function startProg(){ stopProg(); const bpm=parseInt(progBpm.value,10); const interval=60000/bpm; const scheme=progSel.value.split('-'); let i=0;
-  progTimer=setInterval(()=>{ const deg=scheme[i%scheme.length]; const nm=chordName(keySel.value,deg); const f=noteFreq(nm.replace('m','')); if(f) playTriad(f); progNow.textContent=`→ ${deg} : ${nm}`; i++; }, interval*2);
-  document.getElementById('startProg').disabled=true; document.getElementById('stopProg').disabled=false; }
-function stopProg(){ if(progTimer) clearInterval(progTimer); document.getElementById('startProg').disabled=false; document.getElementById('stopProg').disabled=true; progNow.textContent='Pronto…'; }
-document.getElementById('startProg').addEventListener('click', startProg); document.getElementById('stopProg').addEventListener('click', stopProg);
+initProgressions();
 
 /* -------- Ear, Scales, Exercises, Resources -------- */
 const scaleSvg=document.getElementById('scaleDiagram'), scaleSelect=document.getElementById('scaleSelect'), boxSelect=document.getElementById('boxSelect');
